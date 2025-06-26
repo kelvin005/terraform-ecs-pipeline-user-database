@@ -1,0 +1,74 @@
+name: Provision Infra and Deploy Frontend to AWS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Enables manual trigger (for Terraform destroy)
+
+env:
+  AWS_REGION: us-east-2
+  IMAGE_TAG: latest
+
+jobs:
+  terraform_and_deploy:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Initialize Terraform
+      run: terraform init
+
+    - name: Apply Terraform
+      id: terraform
+      run: terraform apply -auto-approve
+
+    - name: Set ECR_REGISTRY environment variable
+      run: |
+        echo "ECR_REGISTRY=${{ steps.terraform.outputs.ecr_url }}" >> $GITHUB_ENV
+
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push Docker image
+      run: |
+        docker build -t my-app:${IMAGE_TAG} .
+        docker tag my-app:${IMAGE_TAG} $ECR_REGISTRY:${IMAGE_TAG}
+        docker push $ECR_REGISTRY:${IMAGE_TAG}
+
+    - name: Force ECS Service Redeploy (if needed)
+      run: |
+        aws ecs update-service \
+          --cluster database-app-cluster \
+          --service my-frontend-service \
+          --force-new-deployment
+
+  terraform_destroy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Initialize Terraform
+      run: terraform init
+
+    - name: Destroy Terraform Infrastructure
+      run: terraform destroy -auto-approve
