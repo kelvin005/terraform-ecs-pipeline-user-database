@@ -49,3 +49,7 @@ module "ecs" {
   ecr_repository_url      = module.ecr.repository_url
   ecs_cluster_name        = "database-app-cluster"
 }
+
+module "s3_backend" {
+  source = "./s3_backend_terraform_state"
+  }
