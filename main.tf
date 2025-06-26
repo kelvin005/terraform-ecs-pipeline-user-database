@@ -50,6 +50,14 @@ module "ecs" {
   ecs_cluster_name        = "database-app-cluster"
 }
 
-module "s3_backend" {
-  source = "./s3_backend_terraform_state"
-  }
+
+  terraform {
+  backend "s3" {
+    bucket         = "terraform-state-backup-bucketv1"
+    key            = "terraform.tfstate"
+    region         = "us-east-2"
+    dynamodb_table = "terraform_state_backup_database_table"
+    encrypt        = true
+      }
+}
+
