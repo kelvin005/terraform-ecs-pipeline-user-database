@@ -35,6 +35,9 @@ jobs:
     - name: Apply Terraform
       id: terraform
       run: terraform apply -auto-approve
+      continue-on-error: false
+    - name: Set ECR_URL output
+      run: echo "ecr_url=$(terraform output -raw ecr_url)" >> $GITHUB_OUTPUT
 
     - name: Set ECR_REGISTRY environment variable
       run: |
