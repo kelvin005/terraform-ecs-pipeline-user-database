@@ -1,0 +1,57 @@
+name: Deploy Application to ECS
+
+on:
+  push:
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-2
+  IMAGE_TAG: latest
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Install Terraform (for output)
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.7
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Initialize Terraform (for ECR output)
+      run: terraform init
+
+    - name: Extract ECR URL from Terraform Output
+      id: extract_ecr
+      run: |
+        ECR_URL=$(terraform output -raw ecr_url | tr -d '[:space:]')
+        echo "ecr_url=$ECR_URL" >> "$GITHUB_OUTPUT"
+
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        registry: ${{ steps.extract_ecr.outputs.ecr_url }}
+
+    - name: Build, Tag and Push Docker Image
+      run: |
+        ECR_REGISTRY="${{ steps.extract_ecr.outputs.ecr_url }}"
+        docker build -t my-app:${IMAGE_TAG} .
+        docker tag my-app:${IMAGE_TAG} $ECR_REGISTRY:${IMAGE_TAG}
+        docker push $ECR_REGISTRY:${IMAGE_TAG}
+
+    - name: Force ECS Service Redeploy
+      run: |
+        aws ecs update-service \
+          --cluster database-app-cluster \
+          --service user-database-app-service \
+          --force-new-deployment

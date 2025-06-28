@@ -48,8 +48,25 @@ module "ecs" {
   efs_file_system_id      = module.efs.efs_file_system_id
   ecr_repository_url      = module.ecr.repository_url
   ecs_cluster_name        = "database-app-cluster"
+  ecs_group_name          = module.cloudwatch_logs.log_group_name
+  frontend_target_group_arn = module.load_balancer.frontend_target_group_arn
+  express_target_group_arn  = module.load_balancer.mongo_express_target_group_arn
+
 }
 
+module "load_balancer" {
+  source                = "./loadbalancer"
+  subnet_main_id        = module.network.subnet_id
+  alb_security_group_id = module.network.alb_security_group_id
+  vpc_id                = module.network.vpc_id
+}
+
+module "autoscaler" {
+  source = "./autoscaler"
+  ecs_app_cluster_name = module.ecs.ecs_app_cluster_name
+  ecs_app_service_name = module.ecs.ecs_app_service_name
+  ecs_mongo_express_service_name = module.ecs.ecs_mongo_express_service_name
+}
 
   terraform {
   backend "s3" {

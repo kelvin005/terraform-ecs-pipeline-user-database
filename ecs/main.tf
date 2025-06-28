@@ -42,6 +42,11 @@ resource "aws_ecs_service" "app_service" {
     security_groups = [var.security_group_id]
     assign_public_ip = true
   }
+  load_balancer {
+    target_group_arn = var.frontend_target_group_arn
+    container_name   = "my-app"
+    container_port   = 3000
+  }
 }
 
 
@@ -78,8 +83,8 @@ resource "aws_ecs_task_definition" "mongo_task" {
       logConfiguration = {
        logDriver = "awslogs",
         options = {
-          awslogs-group         = var.ecs_group_name,
-          awslogs-region        = var.aws_region,
+          awslogs-group  = var.ecs_group_name,
+          awslogs-region  = var.aws_region,
           awslogs-stream-prefix = "ecs"
         }
       }
@@ -108,6 +113,7 @@ resource "aws_ecs_service" "mongo_service" {
     security_groups = [var.security_group_id]
     assign_public_ip = true
   }
+  
 }
 
 resource "aws_ecs_task_definition" "mongo_express_task" {
@@ -150,7 +156,11 @@ resource "aws_ecs_service" "mongo_express_service" {
     security_groups = [var.security_group_id]
     assign_public_ip = true
   }
+
+  load_balancer {
+    target_group_arn = var.express_target_group_arn
+    container_name   = "mongo-express"
+    container_port   = 8081
+  }
 }
-
-
 

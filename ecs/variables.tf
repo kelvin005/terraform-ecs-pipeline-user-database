@@ -47,9 +47,17 @@ variable "efs_file_system_id"{
 variable "ecs_group_name"{
     description = "Name of the ECS task group"
     type        = string
-    default     = "ecs/mongo"
 }
 variable "ecr_repository_url" {
     description = "ECR repository URL for the application image"
+    type        = string
+}
+variable "frontend_target_group_arn" {
+    description = "ARN of the target group for the ECS service"
+    type        = string
+}
+
+variable "express_target_group_arn" {
+    description = "ARN of the target group for the Mongo Express service"
     type        = string
 }
