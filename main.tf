@@ -65,7 +65,7 @@ module "autoscaler" {
   source = "./autoscaler"
   ecs_app_cluster_name = module.ecs.ecs_app_cluster_name
   ecs_app_service_name = module.ecs.ecs_app_service_name
-  ecs_mongo_express_service_name = module.ecs.ecs_mongo_express_service_name
+  ecs_mongo_express_service_name = module.ecs.mongo_express_service_name
 }
 
   terraform {

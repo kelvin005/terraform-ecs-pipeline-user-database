@@ -1,8 +1,7 @@
-name: Deploy Application to ECS
+name: Deploy Docker to ECS
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-2
@@ -28,28 +27,28 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Initialize Terraform (for ECR output)
+    - name: Terraform Init
       run: terraform init
 
-    - name: Extract ECR URL from Terraform Output
+    - name: Extract ECR URL
       id: extract_ecr
       run: |
         ECR_URL=$(terraform output -raw ecr_url | tr -d '[:space:]')
-        echo "ecr_url=$ECR_URL" >> "$GITHUB_OUTPUT"
+        echo "ecr_url=$ECR_URL" >> $GITHUB_OUTPUT
 
-    - name: Log in to Amazon ECR
+    - name: Login to ECR
       uses: aws-actions/amazon-ecr-login@v1
       with:
         registry: ${{ steps.extract_ecr.outputs.ecr_url }}
 
-    - name: Build, Tag and Push Docker Image
+    - name: Build and Push Docker Image
       run: |
         ECR_REGISTRY="${{ steps.extract_ecr.outputs.ecr_url }}"
         docker build -t my-app:${IMAGE_TAG} .
         docker tag my-app:${IMAGE_TAG} $ECR_REGISTRY:${IMAGE_TAG}
         docker push $ECR_REGISTRY:${IMAGE_TAG}
 
-    - name: Force ECS Service Redeploy
+    - name: Redeploy ECS Service
       run: |
         aws ecs update-service \
           --cluster database-app-cluster \
