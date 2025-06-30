@@ -1,6 +1,4 @@
-provider "aws" {
-  region = var.aws_region
-}
+
 
 resource "aws_ecs_cluster" "app_cluster" {
   name = var.ecs_cluster_name
@@ -38,7 +36,7 @@ resource "aws_ecs_service" "app_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [var.subnet_main_id]
+    subnets         = var.subnet_main_id
     security_groups = [var.security_group_id]
     assign_public_ip = true
   }
@@ -109,7 +107,7 @@ resource "aws_ecs_service" "mongo_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [var.subnet_main_id]
+    subnets         = var.subnet_main_id
     security_groups = [var.security_group_id]
     assign_public_ip = true
   }
@@ -152,7 +150,7 @@ resource "aws_ecs_service" "mongo_express_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [var.subnet_main_id]
+    subnets         = var.subnet_main_id
     security_groups = [var.security_group_id]
     assign_public_ip = true
   }

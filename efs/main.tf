@@ -14,6 +14,7 @@ resource "aws_efs_file_system" "mongo_data" {
 
 resource "aws_efs_mount_target" "mongo_target" {
   file_system_id  = aws_efs_file_system.mongo_data.id
-  subnet_id       = var.subnet_main_id
+  for_each     = var.subnet_map
   security_groups = [var.security_group_id]
+  subnet_id       = each.value
 }

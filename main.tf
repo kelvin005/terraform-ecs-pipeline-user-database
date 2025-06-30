@@ -19,13 +19,19 @@ module "iam_role" {
 # VPC, Subnets, Security Group
 module "network" {
   source = "./network"
+
 }
 
 # EFS
 module "efs" {
   source             = "./efs"
-  subnet_main_id     = module.network.subnet_id
+  subnet_main_id     = module.network.subnet_ids
   security_group_id  = module.network.security_group_id
+  subnet_map = {
+  "az1" = module.network.subnet_ids[0]
+  "az2" = module.network.subnet_ids[1]
+}
+
 }
 
 # ECR
@@ -42,23 +48,24 @@ module "cloudwatch_logs" {
 # ECS Cluster and Services
 module "ecs" {
   source                  = "./ecs"
-  subnet_main_id          = module.network.subnet_id
+  subnet_main_id          = module.network.subnet_ids
   security_group_id       = module.network.security_group_id
   ecs_task_execution_role = module.iam_role.iam_role_arn
   efs_file_system_id      = module.efs.efs_file_system_id
   ecr_repository_url      = module.ecr.repository_url
   ecs_cluster_name        = "database-app-cluster"
   ecs_group_name          = module.cloudwatch_logs.log_group_name
-  frontend_target_group_arn = module.load_balancer.frontend_target_group_arn
-  express_target_group_arn  = module.load_balancer.mongo_express_target_group_arn
+  frontend_target_group_arn = module.loadbalancer.frontend_target_group_arn
+  express_target_group_arn  = module.loadbalancer.mongo_express_target_group_arn
+  depends_on = [ module.loadbalancer]
 
 }
 
-module "load_balancer" {
+module "loadbalancer" {
   source                = "./loadbalancer"
-  subnet_main_id        = module.network.subnet_id
   alb_security_group_id = module.network.alb_security_group_id
   vpc_id                = module.network.vpc_id
+  subnet_ids            = module.network.subnet_ids
 }
 
 module "autoscaler" {

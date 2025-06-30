@@ -2,7 +2,7 @@ resource "aws_lb" "app_lb" {
   name               = "user-app-alb"
   internal           = false
   load_balancer_type = "application"
-  subnets            = [var.subnet_main_id]  
+  subnets            = var.subnet_ids # List of subnets for the ALB
   security_groups    = [var.alb_security_group_id]  # Security group for the ALB
 }
 
@@ -44,7 +44,7 @@ resource "aws_lb_target_group" "mongo_express_tg" {
 
 resource "aws_lb_listener" "mongo_express_listener" {
   load_balancer_arn = aws_lb.app_lb.arn
-  port              = 80
+  port              = 8081
   protocol          = "HTTP"
 
   default_action {

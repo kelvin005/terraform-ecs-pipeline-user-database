@@ -1,6 +1,12 @@
 
-output "subnet_id" {
-  value = aws_subnet.subnet_id.id
+output "subnet_ids" {
+  value = [aws_subnet.subnet_id_1.id, aws_subnet.subnet_id_2.id]
+}
+output "subnet_id_1" {
+  value = aws_subnet.subnet_id_1.id
+}
+output "subnet_id_2" {
+  value = aws_subnet.subnet_id_2.id
 }
 output "security_group_id" {
   value = aws_security_group.app_sg.id

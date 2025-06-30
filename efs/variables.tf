@@ -6,10 +6,14 @@ variable "aws_region" {
 
 variable "subnet_main_id" {
   description = "ID of the main subnet"
-  type        = string
+  type        = list(string)
 }
 
 variable "security_group_id" {
   description = "ID of the security group"
   type        = string
+}
+
+variable "subnet_map" {
+  type = map(string)
 }
