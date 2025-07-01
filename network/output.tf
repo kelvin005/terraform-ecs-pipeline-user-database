@@ -19,3 +19,14 @@ output "alb_security_group_id" {
 output "vpc_id" {
   value = aws_vpc.main.id
 }
+
+output "mongo_express_sg_id" {
+  value = aws_security_group.mongo_express_sg.id
+}
+
+output "mongo_db_sg_id" {
+  value = aws_security_group.mongo_db_sg.id
+}
+output "app_sg_id" {
+  value = aws_security_group.app_sg.id
+}

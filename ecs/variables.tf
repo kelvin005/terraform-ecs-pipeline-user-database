@@ -61,3 +61,16 @@ variable "express_target_group_arn" {
     description = "ARN of the target group for the Mongo Express service"
     type        = string
 }
+
+variable "app_security_group" {
+    description = "ID of the security group for the application"
+    type        = string
+}
+variable "mongo_express_security_group" {
+    description = "ID of the security group for the Mongo Express service"
+    type        = string
+}
+variable "mongo_db_security_group" {
+    description = "ID of the security group for the MongoDB service"
+    type        = string
+}

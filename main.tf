@@ -57,6 +57,9 @@ module "ecs" {
   ecs_group_name          = module.cloudwatch_logs.log_group_name
   frontend_target_group_arn = module.loadbalancer.frontend_target_group_arn
   express_target_group_arn  = module.loadbalancer.mongo_express_target_group_arn
+  mongo_db_security_group = module.network.mongo_db_sg_id
+  mongo_express_security_group = module.network.mongo_express_sg_id
+  app_security_group = module.network.app_sg_id
   depends_on = [ module.loadbalancer]
 
 }

@@ -44,7 +44,7 @@ resource "aws_lb_target_group" "mongo_express_tg" {
 
 resource "aws_lb_listener" "mongo_express_listener" {
   load_balancer_arn = aws_lb.app_lb.arn
-  port              = 8081
+  port              = 80
   protocol          = "HTTP"
 
   default_action {
@@ -52,7 +52,7 @@ resource "aws_lb_listener" "mongo_express_listener" {
     target_group_arn = aws_lb_target_group.mongo_express_tg.arn
   }
 }
-resource "aws_lb_listener" "frontend_app_listener" {
+resource "aws_lb_listener" "http_listener" {
   load_balancer_arn = aws_lb.app_lb.arn
   port              = 80
   protocol          = "HTTP"
@@ -66,7 +66,7 @@ resource "aws_lb_listener" "frontend_app_listener" {
 
 
 resource "aws_lb_listener_rule" "frontend_rule" {
-  listener_arn = aws_lb_listener.frontend_app_listener.arn
+  listener_arn = aws_lb_listener.http_listener.arn
   priority     = 1
 
   action {
@@ -82,7 +82,7 @@ resource "aws_lb_listener_rule" "frontend_rule" {
 }
 
 resource "aws_lb_listener_rule" "mongo_express_rule" {
-  listener_arn = aws_lb_listener.mongo_express_listener.arn
+  listener_arn = aws_lb_listener.http_listener.arn
   priority     = 2
 
   action {

@@ -37,7 +37,7 @@ resource "aws_ecs_service" "app_service" {
 
   network_configuration {
     subnets         = var.subnet_main_id
-    security_groups = [var.security_group_id]
+    security_groups = [var.app_security_group]
     assign_public_ip = true
   }
   load_balancer {
@@ -100,7 +100,7 @@ resource "aws_ecs_task_definition" "mongo_task" {
 }
 
 resource "aws_ecs_service" "mongo_service" {
-  name            = "mongo-service"
+  name            = "mongo-db-service"
   cluster         = aws_ecs_cluster.app_cluster.id
   task_definition = aws_ecs_task_definition.mongo_task.arn
   desired_count   = 1
@@ -108,7 +108,7 @@ resource "aws_ecs_service" "mongo_service" {
 
   network_configuration {
     subnets         = var.subnet_main_id
-    security_groups = [var.security_group_id]
+    security_groups = [var.mongo_db_security_group]
     assign_public_ip = true
   }
   
@@ -151,7 +151,7 @@ resource "aws_ecs_service" "mongo_express_service" {
 
   network_configuration {
     subnets         = var.subnet_main_id
-    security_groups = [var.security_group_id]
+    security_groups = [var.mongo_express_security_group]
     assign_public_ip = true
   }
 

@@ -15,6 +15,7 @@ resource "aws_subnet" "subnet_id_1" {
   map_public_ip_on_launch = true
   availability_zone       = "us-east-2a"
 }
+
 resource "aws_subnet" "subnet_id_2" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.subnet_cidr_2
@@ -45,9 +46,12 @@ resource "aws_route_table_association" "aws_route_table_association_2" {
   route_table_id = aws_route_table.rt.id
 }
 
+# === Security Groups ===
+
+# App Security Group
 resource "aws_security_group" "app_sg" {
   name        = "app-sg"
-  description = "Allow HTTP"
+  description = "Allow app traffic and DB access"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -58,6 +62,30 @@ resource "aws_security_group" "app_sg" {
   }
 
   egress {
+    from_port       = 27017
+    to_port         = 27017
+    protocol        = "tcp"
+    cidr_blocks     = [aws_vpc.main.cidr_block]
+  }
+}
+
+# MongoDB Security Group
+resource "aws_security_group" "mongo_db_sg" {
+  name        = "mongo-db-sg"
+  description = "Allow MongoDB access from app and mongo-express"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 27017
+    to_port         = 27017
+    protocol        = "tcp"
+    security_groups = [
+      aws_security_group.app_sg.id,
+      aws_security_group.mongo_express_sg.id
+    ]
+  }
+
+  egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -65,9 +93,31 @@ resource "aws_security_group" "app_sg" {
   }
 }
 
+# Mongo Express Security Group
+resource "aws_security_group" "mongo_express_sg" {
+  name        = "mongo-express-sg"
+  description = "Allow HTTP access and DB egress"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 8081
+    to_port     = 8081
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port       = 27017
+    to_port         = 27017
+    protocol        = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+}
+
+# Application Load Balancer SG
 resource "aws_security_group" "app_lb_sg" {
   name        = "alb-sg"
-  description = "Allow HTTP access"
+  description = "Allow HTTP traffic from internet"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -84,4 +134,3 @@ resource "aws_security_group" "app_lb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
