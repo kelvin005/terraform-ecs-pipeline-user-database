@@ -40,18 +40,6 @@ resource "aws_lb_target_group" "mongo_express_tg" {
   }
 }
 
-
-
-resource "aws_lb_listener" "mongo_express_listener" {
-  load_balancer_arn = aws_lb.app_lb.arn
-  port              = 80
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.mongo_express_tg.arn
-  }
-}
 resource "aws_lb_listener" "http_listener" {
   load_balancer_arn = aws_lb.app_lb.arn
   port              = 80
