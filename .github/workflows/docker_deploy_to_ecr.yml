@@ -33,7 +33,7 @@ jobs:
     - name: Extract ECR URL
       id: extract_ecr
       run: |
-        ECR_URL=$(terraform output -raw ecr_url | tr -d '[:space:]')
+        ECR_URL=$(terraform output -raw ecr_url | grep '.dkr.ecr.' | sed 's/::debug::.*//' | tr -d '[:space:]') 
         echo "ecr_url=$ECR_URL" >> $GITHUB_OUTPUT
 
     - name: Login to ECR

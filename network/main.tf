@@ -4,6 +4,9 @@ provider "aws" {
 
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
+
+  enable_dns_support   = true
+  enable_dns_hostnames = true
   tags = {
     Name = "userdatabase-vpc"
   }
@@ -125,6 +128,27 @@ resource "aws_security_group" "app_lb_sg" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+resource "aws_security_group" "efs_sg" {
+  name        = "efs-sg"
+  description = "Allow NFS traffic"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    security_groups = [aws_security_group.mongo_db_sg.id]
   }
 
   egress {

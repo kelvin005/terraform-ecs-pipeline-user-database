@@ -26,7 +26,7 @@ module "network" {
 module "efs" {
   source             = "./efs"
   subnet_main_id     = module.network.subnet_ids
-  security_group_id  = module.network.security_group_id
+  security_group_id  = module.network.efs_sg_id
   subnet_map = {
   "az1" = module.network.subnet_ids[0]
   "az2" = module.network.subnet_ids[1]
