@@ -6,6 +6,7 @@ on:
 env:
   AWS_REGION: us-east-2
   IMAGE_TAG: latest
+  MONGO_EXPRESS_TAG: 1.0.2
 
 jobs:
   deploy:
@@ -47,6 +48,13 @@ jobs:
         docker build -t my-app:${IMAGE_TAG} .
         docker tag my-app:${IMAGE_TAG} $ECR_REGISTRY:${IMAGE_TAG}
         docker push $ECR_REGISTRY:${IMAGE_TAG}
+
+    - name: pull mongo express docker image and push to ECR
+      run: |
+        ECR_REGISTRY="${{ steps.extract_ecr.outputs.ecr_url }}"
+        docker pull mongo-express:1.0.2-20-alpine3.19
+        docker tag mongo-express:1.0.2-20-alpine3.19 $ECR_REGISTRY:${MONGO_EXPRESS_TAG}
+        docker push $ECR_REGISTRY:${MONGO_EXPRESS_TAG}
 
     - name: Redeploy ECS Service
       run: |

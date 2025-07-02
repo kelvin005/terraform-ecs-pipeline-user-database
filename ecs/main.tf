@@ -125,7 +125,7 @@ resource "aws_ecs_task_definition" "mongo_express_task" {
   container_definitions = jsonencode([
     {
       name      = "mongo-express"
-      image     = "mongo-express:latest"
+      image     = "${var.ecr_repository_url}:1.0"
       essential = true
       environment = [
         { name = "ME_CONFIG_MONGODB_SERVER", value = "mongodb" },
