@@ -74,3 +74,7 @@ variable "mongo_db_security_group" {
     description = "ID of the security group for the MongoDB service"
     type        = string
 }
+variable "vpc_id" {
+    description = "VPC ID where the ECS service will be deployed"
+    type        = string
+}

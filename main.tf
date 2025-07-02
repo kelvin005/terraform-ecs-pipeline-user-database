@@ -61,6 +61,7 @@ module "ecs" {
   mongo_express_security_group = module.network.mongo_express_sg_id
   app_security_group = module.network.app_sg_id
   depends_on = [ module.loadbalancer]
+  vpc_id = module.network.vpc_id
 
 }
 

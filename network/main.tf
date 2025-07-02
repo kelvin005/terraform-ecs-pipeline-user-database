@@ -51,7 +51,6 @@ resource "aws_route_table_association" "aws_route_table_association_2" {
 
 # === Security Groups ===
 
-# App Security Group
 resource "aws_security_group" "app_sg" {
   name        = "app-sg"
   description = "Allow app traffic and DB access"
