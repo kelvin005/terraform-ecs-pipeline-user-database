@@ -1,9 +1,10 @@
-
 resource "aws_ecs_cluster" "app_cluster" {
   name = var.ecs_cluster_name
 }
 
-
+# ----------------------------
+# Service Discovery Namespace
+# ----------------------------
 resource "aws_service_discovery_private_dns_namespace" "mongo_namespace" {
   name        = "local"
   description = "Private namespace for MongoDB"
@@ -24,7 +25,6 @@ resource "aws_service_discovery_service" "mongo_sd" {
 
     routing_policy = "WEIGHTED"
   }
-
 }
 
 # ----------------------------
@@ -40,13 +40,12 @@ resource "aws_ecs_task_definition" "app_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "my-app"
-      image     = "${var.ecr_repository_url}:latest"
-      essential = true
+      name      = "my-app",
+      image     = "${var.ecr_repository_url}:latest",
+      essential = true,
       portMappings = [
         {
           containerPort = 3000
-          hostPort      = 3000
         }
       ],
       logConfiguration = {
@@ -56,7 +55,10 @@ resource "aws_ecs_task_definition" "app_task" {
           awslogs-region        = var.aws_region,
           awslogs-stream-prefix = "ecs"
         }
-      }
+      },
+      environment = [
+        { name = "MONGO_URL", value = "mongodb://admin:password@mongodb.local:27017" }
+      ]
     }
   ])
 }
@@ -71,7 +73,7 @@ resource "aws_ecs_service" "app_service" {
   network_configuration {
     subnets         = var.subnet_main_id
     security_groups = [var.app_security_group]
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   load_balancer {
@@ -81,7 +83,9 @@ resource "aws_ecs_service" "app_service" {
   }
 }
 
-
+# ----------------------------
+# MongoDB Task Definition
+# ----------------------------
 resource "aws_ecs_task_definition" "mongo_task" {
   family                   = "mongo-task"
   network_mode             = "awsvpc"
@@ -92,18 +96,16 @@ resource "aws_ecs_task_definition" "mongo_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "mongodb"
-      image     = "mongo:latest"
-      essential = true
+      name      = "mongodb",
+      image     = "mongo:latest",
+      essential = true,
       environment = [
         { name = "MONGO_INITDB_ROOT_USERNAME", value = "admin" },
-        { name = "MONGO_INITDB_ROOT_PASSWORD", value = "password" },
-        { name = "MONGO_URL", value = "mongodb://admin:password@mongodb.local:27017" }
+        { name = "MONGO_INITDB_ROOT_PASSWORD", value = "password" }
       ],
       portMappings = [
         {
           containerPort = 27017
-          hostPort      = 27017
         }
       ],
       mountPoints = [
@@ -126,9 +128,9 @@ resource "aws_ecs_task_definition" "mongo_task" {
   volume {
     name = "mongo-storage"
     efs_volume_configuration {
-      file_system_id       = var.efs_file_system_id
-      root_directory       = "/"
-      transit_encryption   = "ENABLED"
+      file_system_id     = var.efs_file_system_id
+      root_directory     = "/"
+      transit_encryption = "ENABLED"
     }
   }
 }
@@ -143,7 +145,7 @@ resource "aws_ecs_service" "mongo_service" {
   network_configuration {
     subnets         = var.subnet_main_id
     security_groups = [var.mongo_db_security_group]
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   service_registries {
@@ -175,7 +177,6 @@ resource "aws_ecs_task_definition" "mongo_express_task" {
       portMappings = [
         {
           containerPort = 8081
-          hostPort      = 8081
         }
       ],
       logConfiguration = {
@@ -200,7 +201,7 @@ resource "aws_ecs_service" "mongo_express_service" {
   network_configuration {
     subnets         = var.subnet_main_id
     security_groups = [var.mongo_express_security_group]
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   load_balancer {
