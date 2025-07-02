@@ -2,8 +2,8 @@ resource "aws_lb" "app_lb" {
   name               = "user-app-alb"
   internal           = false
   load_balancer_type = "application"
-  subnets            = var.subnet_ids # List of subnets for the ALB
-  security_groups    = [var.alb_security_group_id]  # Security group for the ALB
+  subnets            = var.subnet_ids 
+  security_groups    = [var.alb_security_group_id]  
 }
 
 
