@@ -12,14 +12,14 @@ resource "aws_vpc" "main" {
   }
 }
 
-resource "aws_subnet" "subnet_id_1" {
+resource "aws_subnet" "public_subnet_az1" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.subnet_cidr
   map_public_ip_on_launch = true
   availability_zone       = "us-east-2a"
 }
 
-resource "aws_subnet" "subnet_id_2" {
+resource "aws_subnet" "public_subnet_az2" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.subnet_cidr_2
   availability_zone       = "us-east-2b"
@@ -40,12 +40,12 @@ resource "aws_route_table" "rt" {
 }
 
 resource "aws_route_table_association" "aws_route_table_association_1" {
-  subnet_id      = aws_subnet.subnet_id_1.id
+  subnet_id      = aws_subnet.public_subnet_az1.id
   route_table_id = aws_route_table.rt.id
 }
 
 resource "aws_route_table_association" "aws_route_table_association_2" {
-  subnet_id      = aws_subnet.subnet_id_2.id
+  subnet_id      = aws_subnet.public_subnet_az2.id
   route_table_id = aws_route_table.rt.id
 }
 
@@ -136,6 +136,24 @@ resource "aws_security_group" "app_lb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+resource "aws_security_group_rule" "allow_alb_to_mongoexpress" {
+  type                     = "ingress"
+  from_port                = 8081
+  to_port                  = 8081
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.mongo_express_sg.id
+  source_security_group_id = aws_security_group.app_lb_sg.id
+}
+resource "aws_security_group_rule" "allow_alb_to_frontend_app" {
+  type                     = "ingress"
+  from_port                = 3000
+  to_port                  = 3000
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.app_sg.id
+  source_security_group_id = aws_security_group.app_lb_sg.id
+}
+
 
 
 resource "aws_security_group" "efs_sg" {

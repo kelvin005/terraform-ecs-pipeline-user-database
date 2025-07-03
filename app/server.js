@@ -22,8 +22,8 @@ app.get('/profile-picture', function (req, res) {
   res.end(img, 'binary');
 });
 
-// MongoDB URL (use env var if set)
-const mongoUrl = process.env.MONGO_URL || "mongodb://admin:password@localhost:27017";
+// MongoDB URL
+const mongoUrl = process.env.MONGO_URL;
 const mongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
 const databaseName = "user-account";
 
@@ -77,7 +77,7 @@ app.get('/get-profile', function (req, res) {
   });
 });
 
-// Start server on all interfaces
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', function () {
   console.log(`App listening on port ${PORT}`);

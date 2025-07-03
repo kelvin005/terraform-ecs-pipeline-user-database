@@ -56,9 +56,12 @@ resource "aws_ecs_task_definition" "app_task" {
           awslogs-stream-prefix = "ecs"
         }
       },
-      environment = [
-        { name = "MONGO_URL", value = "mongodb://admin:password@mongodb.local:27017" }
-      ]
+     environment = [ {
+               name  = "MONGO_URL"
+               value = "mongodb://admin:password@mongodb.local:27017"
+                        }
+            ]
+
     }
   ])
 }
@@ -73,7 +76,7 @@ resource "aws_ecs_service" "app_service" {
   network_configuration {
     subnets         = var.subnet_main_id
     security_groups = [var.app_security_group]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
   load_balancer {
@@ -145,7 +148,7 @@ resource "aws_ecs_service" "mongo_service" {
   network_configuration {
     subnets         = var.subnet_main_id
     security_groups = [var.mongo_db_security_group]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
   service_registries {
@@ -163,6 +166,7 @@ resource "aws_ecs_task_definition" "mongo_express_task" {
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = var.ecs_task_execution_role
+
 
   container_definitions = jsonencode([
     {
@@ -201,7 +205,7 @@ resource "aws_ecs_service" "mongo_express_service" {
   network_configuration {
     subnets         = var.subnet_main_id
     security_groups = [var.mongo_express_security_group]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
   load_balancer {

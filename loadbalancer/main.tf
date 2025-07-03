@@ -20,7 +20,7 @@ resource "aws_lb_target_group" "frontend_tg" {
     timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    matcher             = "200-399"
+    matcher             = "200-499"
   }
 }
 resource "aws_lb_target_group" "mongo_express_tg" {
@@ -36,7 +36,7 @@ resource "aws_lb_target_group" "mongo_express_tg" {
     timeout             = 5
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    matcher             = "200-399"
+    matcher             = "200-499"
   }
 }
 
@@ -46,8 +46,12 @@ resource "aws_lb_listener" "http_listener" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.frontend_tg.arn
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Not Found"
+      status_code  = "404"
+    }
   }
 }
 
@@ -64,9 +68,9 @@ resource "aws_lb_listener_rule" "frontend_rule" {
 
   condition {
     path_pattern {
-    values = ["/my-app*", "/myapp/*"]
+      values = ["/myapp/*"]
+    }
   }
-}
 }
 
 resource "aws_lb_listener_rule" "mongo_express_rule" {
